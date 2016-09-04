@@ -1,5 +1,6 @@
 package com.kevinwin.todo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -21,6 +22,9 @@ public class MainActivity extends AppCompatActivity {
     ListView lvItems;
     EditText etEditText;
 
+    private final int REQUEST_CODE = 42;
+    private final int RESULT_OK = 24;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +35,22 @@ public class MainActivity extends AppCompatActivity {
         etEditText = (EditText) findViewById(R.id.etEditText);
 
         setupListViewListener();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+
+            String newText = data.getExtras().getString("newText");
+
+            int aPos = data.getExtras().getInt("pos");
+
+            // set text and persist
+            todoItems.set(aPos, newText);
+            aToDoAdapter.notifyDataSetChanged();
+            writeItems();
+        }
     }
 
     public void populateArrayItems() {
@@ -52,6 +72,16 @@ public class MainActivity extends AppCompatActivity {
                 aToDoAdapter.notifyDataSetChanged();
                 writeItems();
                 return true;
+            }
+        });
+
+        lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View item, int pos, long id) {
+                Intent intent = new Intent(MainActivity.this, EditItemActivity.class);
+                intent.putExtra("text", todoItems.get(pos));
+                intent.putExtra("pos", pos);
+                startActivityForResult(intent, REQUEST_CODE);
             }
         });
     }
